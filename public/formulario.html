@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Candidatura - Limpieza</title>
+    <style>
+        .radio-group label, .radio-group input {
+            display: inline-block; /* Coloca los elementos en línea */
+            margin-right: 20px; /* Aumenta el espacio entre las opciones */
+            margin-bottom: 10px; /* Agrega espacio vertical entre preguntas */
+            vertical-align: middle; /* Alinea verticalmente los radios con las etiquetas */
+        }
+
+        label {
+            display: block; /* Asegura que las preguntas estén en líneas separadas */
+            margin-bottom: 10px; /* Espacio entre las preguntas */
+            font-weight: bold; /* Aumenta la claridad de las preguntas */
+        }
+            body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="email"], input[type="number"], textarea, select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Formulario de Candidatura - Limpieza</h1>
+    <form action="/guardar-datos" method="POST">
+        <label for="nombres">Nombres:</label>
+        <input type="text" id="nombres" name="nombres" required>
+
+        <label for="apellidos">Apellidos:</label>
+        <input type="text" id="apellidos" name="apellidos" required>
+
+        <label for="tel1">Teléfono Personal:</label>
+        <input type="text" id="tel1" name="tel1" required>
+
+        <label for="tel2">Teléfono Secundario:</label>
+        <input type="text" id="tel2" name="tel2">
+
+        <label for="correo">Correo:</label>
+        <input type="email" id="correo" name="correo" required>
+
+        <label for="direccion">Dirección donde vive:</label>
+        <input type="text" id="direccion" name="direccion" required>
+
+        <label for="edad">Edad:</label>
+        <input type="number" id="edad" name="edad" required>
+
+        <label for="dpi">DPI:</label>
+        <input type="text" id="dpi" name="dpi" required>
+
+        <label for="estado_civil">Estado Civil:</label>
+        <input type="text" id="estado_civil" name="estado_civil" required>
+
+        <label for="genero">Género:</label>
+        <select id="genero" name="genero" required>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="O">Otro</option>
+        </select>
+
+        <label for="grado_academico">¿Cuál es su grado académico?</label>
+        <input type="text" id="grado_academico" name="grado_academico" required>
+
+        <label for="anos_experiencia">¿Cuántos años de experiencia tiene en el área de limpieza?</label>
+        <input type="number" id="anos_experiencia" name="anos_experiencia" required>
+
+        <label>¿Está dispuesto a trabajar en horarios rotativos o en turnos nocturnos si es necesario?</label>
+        <input type="radio" id="disposicion_si" name="disposicion_horarios" value="true" required>
+        <label for="disposicion_si">Sí</label>
+        <input type="radio" id="disposicion_no" name="disposicion_horarios" value="false">
+        <label for="disposicion_no">No</label>
+
+        <label for="motivo_renuncia">¿Cuál es el motivo de la renuncia o despido en su trabajo anterior?</label>
+        <textarea id="motivo_renuncia" name="motivo_renuncia" required></textarea>
+
+        <label>¿Ha tomado algo que no es de su pertenencia?</label>
+        <input type="radio" id="hurto_si" name="hurto" value="true" required>
+        <label for="hurto_si">Sí</label>
+        <input type="radio" id="hurto_no" name="hurto" value="false">
+        <label for="hurto_no">No</label>
+
+        <label for="manejo_presupuesto">Si le dan un presupuesto para comprar suministros, ¿cómo lo manejaría?</label>
+        <textarea id="manejo_presupuesto" name="manejo_presupuesto" required></textarea>
+
+        <!-- Primera pregunta -->
+        <label>Antes de retirarme del lugar, ¿reviso las tareas para no dejar pendientes?</label>
+        <div class="radio-group">
+            <input type="radio" id="revisar_tarea_si" name="revisar_tarea" value="true" required>
+            <label for="revisar_tarea_si">Reviso</label>
+            
+            <input type="radio" id="revisar_tarea_no" name="revisar_tarea" value="false">
+            <label for="revisar_tarea_no">No reviso</label>
+        </div>
+
+        <!-- Segunda pregunta -->
+        <label>Si en el área de trabajo hay un teléfono, ¿pide permiso para utilizarlo o lo toma sin permiso?</label>
+        <div class="radio-group">
+            <input type="radio" id="permiso_telefono_si" name="permiso_telefono" value="true" required>
+            <label for="permiso_telefono_si">Pido permiso</label>
+            
+            <input type="radio" id="permiso_telefono_no" name="permiso_telefono" value="false">
+            <label for="permiso_telefono_no">Lo tomo sin permiso</label>
+        </div>
+
+        <!-- Tercera pregunta -->
+        <label>Si usted encuentra dinero tirado, ¿se lo queda o lo devuelve?</label>
+        <div class="radio-group">
+            <input type="radio" id="encuentro_dinero_si" name="encuentro_dinero" value="true" required>
+            <label for="encuentro_dinero_si">Pido permiso</label>
+            
+            <input type="radio" id="encuentro_dinero_no" name="encuentro_dinero" value="false">
+            <label for="encuentro_dinero_no">Lo tomo sin permiso</label>
+        </div>
+
+        <!-- Cuarta pregunta -->
+        <label>Si usted encuentra un objeto tirado, ¿se lo queda o lo devuelve?</label>
+        <div class="radio-group">
+            <input type="radio" id="encuentro_objeto_si" name="encuentro_objeto" value="true" required>
+            <label for="encuentro_objeto_si">Pido permiso</label>
+            
+            <input type="radio" id="encuentro_objeto_no" name="encuentro_objeto" value="false">
+            <label for="encuentro_objeto_no">Lo tomo sin permiso</label>
+        </div>
+
+        <form action="/guardar-datos" method="POST">
+
+            <button type="submit">Enviar</button>
+        </form>
+        
+        <p style="margin-bottom: 30px;">
+            <a href="http://localhost:3000/empleos-limpieza.html">Regresar</a>
+        </p> 
+    </form>
+</body>
+</html>

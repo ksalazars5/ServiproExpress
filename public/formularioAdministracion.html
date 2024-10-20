@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Candidatura - Administracion</title>
+    <style>
+        .radio-group label, .radio-group input {
+            display: inline-block; /* Coloca los elementos en línea */
+            margin-right: 20px; /* Aumenta el espacio entre las opciones */
+            margin-bottom: 10px; /* Agrega espacio vertical entre preguntas */
+            vertical-align: middle; /* Alinea verticalmente los radios con las etiquetas */
+        }
+
+        label {
+            display: block; /* Asegura que las preguntas estén en líneas separadas */
+            margin-bottom: 10px; /* Espacio entre las preguntas */
+            font-weight: bold; /* Aumenta la claridad de las preguntas */
+        }
+            body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="email"], input[type="number"], textarea, select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <body>
+        <h1>Formulario de Candidatura - Administración</h1>
+        <form action="/guardar-datos-admin" method="POST">
+            <label for="nombres">Nombres:</label>
+            <input type="text" id="nombres" name="nombres" required>
+    
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellidos" name="apellidos" required>
+    
+            <label for="tel1">Teléfono Personal:</label>
+            <input type="text" id="tel1" name="tel1" required>
+    
+            <label for="tel2">Teléfono Secundario:</label>
+            <input type="text" id="tel2" name="tel2">
+    
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo" required>
+    
+            <label for="direccion">Dirección donde vive:</label>
+            <input type="text" id="direccion" name="direccion" required>
+    
+            <label for="edad">Edad:</label>
+            <input type="number" id="edad" name="edad" required>
+    
+            <label for="dpi">DPI:</label>
+            <input type="text" id="dpi" name="dpi" required>
+    
+            <label for="estado_civil">Estado Civil:</label>
+            <input type="text" id="estado_civil" name="estado_civil" required>
+    
+            <label for="genero">Género:</label>
+            <select id="genero" name="genero" required>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="O">Otro</option>
+            </select>
+    
+            <label for="grado_academico">¿Cuál es su grado académico?</label>
+            <input type="text" id="grado_academico" name="grado_academico" required>
+    
+            <label for="anos_experiencia">¿Cuántos años de experiencia tiene en el área?</label>
+            <input type="number" id="anios_experiencia" name="anios_experiencia" required>
+    
+            <label>¿Está dispuesto a trabajar en horarios rotativos o en turnos nocturnos si es necesario?</label>
+            <input type="radio" id="disposicion_si" name="disponibilidad_rotativos" value="true" required>
+            <label for="disposicion_si">Sí</label>
+            <input type="radio" id="disposicion_no" name="disponibilidad_rotativos" value="false">
+            <label for="disposicion_no">No</label>
+    
+            <label for="motivo_renuncia">¿Cuál es el motivo de la renuncia o despido en su trabajo anterior?</label>
+            <textarea id="motivo_renuncia" name="motivo_renuncia" required></textarea>
+    
+            <label for="actividades_antiguo_trabajo">¿Qué actividades realizaba en su antiguo trabajo?</label>
+            <textarea id="actividades_antiguo_trabajo" name="actividades_antiguo_trabajo" required></textarea>
+    
+            <label for="equipos_oficina_puede_usar">¿Qué equipos de oficina puede usar?</label>
+            <textarea id="equipos_oficina_puede_usar" name="equipos_oficina_puede_usar" required></textarea>
+    
+            <label for="equipos_oficina_no_puede_usar">¿Qué equipos de oficina no puede usar?</label>
+            <textarea id="equipos_oficina_no_puede_usar" name="equipos_oficina_no_puede_usar" required></textarea>
+    
+            <button type="submit">Enviar</button>
+            
+            <p style="margin-bottom: 30px;">
+                <a href="http://localhost:3000/empleos-administracion.html">Regresar</a>
+            </p> 
+        </form>
+    </body>
+    </html>
+    

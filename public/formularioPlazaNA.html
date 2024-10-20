@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir y Mostrar Plaza - Sistema de Empleo </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+  }
+
+  body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+  }
+
+  header {
+      background-color: #007bff;
+      color: white;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 1.5em;
+  }
+
+  nav {
+      display: flex;
+      justify-content: center;
+      background-color: #343a40;
+      padding: 10px 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  nav a {
+      color: white;
+      padding: 12px 25px;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+      text-transform: uppercase;
+      transition: background-color 0.3s, color 0.3s;
+      border-radius: 5px;
+  }
+
+  nav a:hover {
+      background-color: #007bff;
+      color: white;
+  }
+
+  .container {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      flex-direction: column;
+  }
+
+  .dashboard {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+  }
+
+  .dashboard h2 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      color: #333;
+  }
+
+  form {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 20px;
+  }
+
+  form label {
+      font-weight: bold;
+      color: #333;
+  }
+
+  form input[type="text"],
+  form input[type="date"] {
+      padding: 10px;
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+  }
+
+  form input[type="checkbox"] {
+      margin-left: 10px;
+  }
+
+  button {
+      background-color: #343a40;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+  }
+
+  button:hover {
+      background-color: #007bff;
+  }
+
+  .table-container {
+      width: 100%;
+      margin-top: 20px;
+  }
+
+  table {
+      width: 100%;
+      border-collapse: collapse;
+  }
+
+  table, th, td {
+      border: 1px solid #ddd;
+  }
+
+  th, td {
+      padding: 10px;
+      text-align: left;
+  }
+
+  th {
+      background-color: #343a40;
+      color: white;
+  }
+
+  td {
+      background-color: #f9f9f9;
+  }
+
+  td button {
+      background-color: #ff4d4d;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+  }
+
+  td button:hover {
+      background-color: #ff1a1a;
+  }
+
+  footer {
+      background-color: #343a40;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 0.9em;
+  }
+</style>
+</head>
+
+<body>
+
+    <header>
+        Sistema de Empleo - Añadir Plaza Administracion
+    </header>
+
+    <div class="container">
+        <div class="form-container">
+            <h2>Añadir Plaza</h2>
+            <form id="form-agregar-plaza" action="/add-plaza-administracion" method="POST">
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" name="descripcion" required>
+
+                <label for="disponible">
+                    <input type="checkbox" id="disponible" name="disponible"> Disponible
+                </label>
+
+                <label for="fecha_creacion">Fecha de creación:</label>
+                <input type="date" id="fecha_creacion" name="fecha_creacion" required>
+
+                <button type="submit">Añadir Plaza</button>
+            </form>
+
+            <button onclick="window.location.href='/empleos-administracion.html'">Volver al Inicio</button>
+
+            <h2>Lista de Plazas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descripción</th>
+                        <th>Disponible</th>
+                        <th>Fecha de creación</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="plazas-table">
+                    <!-- Las plazas se llenarán dinámicamente desde JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+        async function fetchPlazas() {
+            try {
+                const response = await fetch('/empleos-administracion');  // Llama a la ruta que obtiene todas las plazas
+                const plazas = await response.json();
+                renderPlazas(plazas); // Renderiza todas las plazas
+            } catch (error) {
+                console.error('Error al obtener las plazas:', error);
+            }
+        }
+
+
+        function renderPlazas(plazas) {
+            const plazasTable = document.getElementById('plazas-table');
+            plazasTable.innerHTML = ''; // Limpia la tabla antes de volver a renderizar
+
+            plazas.forEach(plaza => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td>${plaza.id_reclutamiento}</td>
+                <td>${plaza.descripcion}</td>
+                <td>${plaza.disponible ? 'Si' : 'Si'}</td>
+                <td>${new Date(plaza.fecha_creacion).toLocaleDateString()}</td>
+                <td>
+                    <button onclick="deletePlaza(${plaza.id_reclutamiento})">Eliminar</button>
+                </td>
+            `;
+                plazasTable.appendChild(row);
+            });
+        }
+
+        async function deletePlaza(id) {
+            console.log('ID de la plaza a eliminar:', id); // Log del ID
+            const confirmation = confirm('¿Estás seguro de que quieres eliminar esta plaza?');
+            if (confirmation) {
+                try {
+                    const response = await fetch(`/delete-plaza/${id}`, {
+                        method: 'DELETE'
+                    });
+                    console.log('Respuesta del servidor:', response); // Log de respuesta
+                    if (response.ok) {
+                        fetchPlazas(); // Actualiza la lista de plazas
+                    } else {
+                        const errorText = await response.text();
+                        alert(`Error al eliminar la plaza: ${errorText}`);
+                    }
+                } catch (error) {
+                    console.error('Error al realizar la solicitud DELETE:', error);
+                }
+            }
+        }
+
+        // Llama a fetchPlazas al cargar la página
+        fetchPlazas();
+    </script>
+</body>
+</html>

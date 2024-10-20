@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Seguridad</title>
+    <style>
+        /* Estilos aquí... */
+        .radio-group label, .radio-group input {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+            vertical-align: middle;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Formulario de Candidatura - Seguridad</h1>
+    <form action="/guardar-datos-seguridad" method="POST">
+        <label for="nombres">Nombres:</label>
+        <input type="text" id="nombres" name="nombres" required>
+
+        <label for="apellidos">Apellidos:</label>
+        <input type="text" id="apellidos" name="apellidos" required>
+
+        <label for="tel_personal">Teléfono Personal:</label>
+        <input type="tel" id="tel_personal" name="tel1" required>
+
+        <label for="tel_secundario">Teléfono Secundario:</label>
+        <input type="tel" id="tel_secundario" name="tel2">
+
+        <label for="correo">Correo:</label>
+        <input type="email" id="correo" name="correo" required>
+
+        <label for="direccion">Dirección donde vive:</label>
+        <input type="text" id="direccion" name="direccion" required>
+
+        <label for="edad">Edad:</label>
+        <input type="number" id="edad" name="edad" required>
+
+        <label for="dpi">DPI:</label>
+        <input type="text" id="dpi" name="dpi" required>
+
+        <label for="estado_civil">Estado Civil:</label>
+        <input type="text" id="estado_civil" name="estado_civil" required>
+
+        <label for="genero">Género:</label>
+        <select id="genero" name="genero" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="O">Otro</option>
+        </select>
+
+        <label for="grado_academico">¿Cuál es su grado académico?</label>
+        <input type="text" id="grado_academico" name="grado_academico" required>
+
+        <label for="anios_experiencia">¿Cuántos años de experiencia tiene en el área de seguridad?</label>
+        <input type="number" id="anios_experiencia" name="anios_experiencia" required>
+
+        <label for="disponibilidad_rotativos">¿Está dispuesto a trabajar en horarios rotativos o en turnos nocturnos si es necesario?</label>
+        <select id="disponibilidad_rotativos" name="disponibilidad_rotativos" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+        </select>
+
+        <label for="motivo_renuncia_despido">¿Cuál es el motivo de la renuncia o despido en su trabajo anterior?</label>
+        <textarea id="motivo_renuncia_despido" name="motivo_renuncia_despido" rows="3" required></textarea>
+
+        <label for="antecedentes">¿Tiene antecedentes policiacos o penales manchados? Si los tiene, explique el por qué:</label>
+        <select id="antecedentes" name="antecedentes" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+        </select>
+        <textarea id="explicacion_antecedentes" name="explicacion_antecedentes" rows="3"></textarea>
+
+        <label for="detenciones">¿Ha estado detenido alguna vez? Si lo ha estado, explique el por qué:</label>
+        <select id="detenciones" name="detenciones" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+        </select>
+        <textarea id="explicacion_detenciones" name="explicacion_detenciones" rows="3"></textarea>
+
+        <label for="licencia_arma">¿Cuenta con licencia de portar arma?</label>
+        <select id="licencia_arma" name="licencia_arma" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+        </select>
+
+        <label for="tipo_licencia">¿Qué tipo de licencia cuenta?</label>
+        <input type="text" id="tipo_licencia" name="tipo_licencia">
+
+        <label for="funciones_seguridad">¿Qué tipo de funciones de seguridad ha desempeñado en trabajos anteriores?</label>
+        <textarea id="funciones_seguridad" name="funciones_seguridad" rows="4" required></textarea>
+
+        <button type="submit">Enviar</button>
+
+        <p style="margin-bottom: 30px;">
+            <a href="http://localhost:3000/empleos-seguridad.html">Regresar</a>
+        </p> 
+    </form>
+</div>
+
+</body>
+</html>
