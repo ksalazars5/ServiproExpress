@@ -5,58 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f3f3;
+            position: relative;
+        }
+        .collage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.pinimg.com/564x/44/43/ad/4443ade9741f492a3c7f8ff66829ea5e.jpg'), url('https://i.pinimg.com/564x/fd/04/62/fd04626541f62bef74d57211ad505e90.jpg'), url('https://i.pinimg.com/564x/b1/c6/06/b1c6067b430c9e2f4b3bc53a9c018510.jpg'), url('https://i.pinimg.com/564x/94/f7/38/94f738858a5301ffc274a20eda728f17.jpg');
+            background-position: top left, top right, bottom left, bottom right;
+            background-size: 50% 50%;
+            background-repeat: no-repeat;
+            opacity: 0.3;
+        }
+        .login-container {
+            position: relative; 
+            background-color: #fff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            width: 350px;
             text-align: center;
-            margin-top: 50px;
-            background-color: #f0f0f0;
+            z-index: 1; 
         }
         h1 {
+            font-size: 28px;
             color: #333;
+            margin-bottom: 30px;
         }
-        form {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
         }
         label {
-            display: block;
-            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
         }
         input[type="text"], input[type="password"] {
             width: 100%;
-            padding: 8px;
-            margin: 5px 0 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #ff6f61;
+            outline: none;
         }
         button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
+            width: 100%;
+            padding: 12px;
+            background-color: #ff6f61;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #e65e50;
+        }
+        .forgot-password {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #888;
+        }
+        .forgot-password a {
+            color: #ff6f61;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .forgot-password a:hover {
+            color: #e65e50;
+        }
+        .footer-text {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
-    <h1>Iniciar Sesión</h1>
-    <form action="/login" method="POST">
-        <label for="username">Usuario:</label>
-        <input type="text" id="username" name="username" required>
-        
-        <label for="password">Contraseña:</label>
-        <input type="password" id="password" name="password" required>
-        
-        <button type="submit">Iniciar Sesión</button>
+    <!-- Contenedor para el collage -->
+    <div class="collage"></div>
 
-    </form>
+    <!-- Cuadro de login -->
+    <div class="login-container">
+        <h1>Iniciar Sesión</h1>
+        <form id="loginForm" onsubmit="iniciarSesion(event)">
+            <input type="text" id="username" placeholder="Nombre de usuario" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        <div class="forgot-password">
+            <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>     
+        <script>
+            function iniciarSesion(event) {
+                event.preventDefault(); // Evita el envío del formulario
+            
+                // Simulación de validación de usuario
+                const usuario = {
+                    id_usuario: document.getElementById('username').value,
+                    rol: "admin" // Asigna el rol que corresponda según la validación
+                };
+            
+                // Almacenar en localStorage
+                localStorage.setItem('id_usuario', usuario.id_usuario);
+                localStorage.setItem('rol', usuario.rol);
+            
+                // Redirigir o hacer algo después del inicio de sesión
+                window.location.href = '/success'; // o el nombre de la ruta configurada
+            }
+            </script>    
+        <div class="footer-text">
+            &copy; 2024 ServiPro Todos los derechos reservados.
+        </div>
+    </div>
 </body>
 </html>

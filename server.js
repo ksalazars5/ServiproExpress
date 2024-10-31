@@ -59,7 +59,6 @@ app.post('/login', async (req, res) => {
 });
 
 
-
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static('public'));
 //limpieza a la base de datos limpieza
@@ -215,13 +214,9 @@ app.post('/guardar-datos', async (req, res) => {
     }
 });
 
-
 // Configura body-parser para manejar solicitudes POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-
-
 // Endpoint para obtener empleos de seguridad
 app.get('/empleos-seguridad', async (req, res) => {
     const client = await pool.connect();
@@ -347,10 +342,6 @@ app.post('/guardar-datos-seguridad', async (req, res) => {
         client.release(); // Liberar la conexión
     }
 });
-
-
-
-
 // Endpoint para eliminar una plaza
 app.delete('/delete-plaza-seguridad/:id', async (req, res) => {
     const { id } = req.params; // Obtiene el ID de los parámetros de la URL
@@ -369,7 +360,6 @@ app.delete('/delete-plaza-seguridad/:id', async (req, res) => {
         client.release();
     }
 });
-
 // Endpoint para obtener empleos de administración
 app.get('/empleos-administracion', async (req, res) => {
     const client = await pool.connect();
@@ -494,7 +484,6 @@ app.post('/guardar-datos-admin', async (req, res) => {
     }
 });
 
-
 // Endpoint para eliminar una plaza de administración
 app.delete('/delete-plaza-administracion/:id', async (req, res) => {
     const { id } = req.params; // Obtiene el ID de los parámetros de la URL
@@ -515,16 +504,22 @@ app.delete('/delete-plaza-administracion/:id', async (req, res) => {
 });
 
 app.get('/descargar-reportes-limpieza', async (req, res) => {
+    const { genero } = req.query; // Lee el parámetro de género de la URL
     const client = await pool.connect();
     try {
-        // Realiza una consulta que une ambas tablas
-        const result = await client.query(`
+        // Construye la consulta con el filtro de género si se proporciona
+        let query = `
             SELECT dg.*, rl.*
             FROM DATOS_GENERALES dg
             JOIN RESPUESTAS_LIMPIEZA rl ON dg.ID_PREGUNTA = rl.ID_DATOS_GENERALES
             WHERE dg.ID_CATEGORIA = 2
-        `); // 2 para limpieza
-
+        `;
+        
+        if (genero) {
+            query += ` AND dg.GENERO = $1`; // Agrega el filtro de género
+        }
+        
+        const result = await client.query(query, genero ? [genero.toUpperCase()] : []);
         const datos = result.rows;
 
         // Convierte los datos a una hoja de Excel
@@ -532,9 +527,24 @@ app.get('/descargar-reportes-limpieza', async (req, res) => {
         const wb = xlsx.utils.book_new();
         xlsx.utils.book_append_sheet(wb, ws, 'Limpieza');
 
+        // Ajuste del encabezado a mayúsculas y ajuste automático de columna
+        const header = Object.keys(datos[0] || {});
+        header.forEach((column, index) => {
+            const cellAddress = xlsx.utils.encode_cell({ c: index, r: 0 });
+            ws[cellAddress].v = column.toUpperCase();
+        });
+
+        // Ajustar el ancho de las columnas automáticamente
+        const columnWidths = header.map((col) => {
+            const maxLength = datos.reduce((max, row) => Math.max(max, row[col]?.toString().length || 0), col.length);
+            return { wch: maxLength + 2 };
+        });
+        ws['!cols'] = columnWidths;
+
+        // Convierte el libro a un archivo Excel y envíalo
         const excelFile = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
 
-        res.setHeader('Content-Disposition', 'attachment; filename=reportes_limpieza.xlsx');
+        res.setHeader('Content-Disposition', `attachment; filename=reportes_limpieza_${genero || 'todos'}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(excelFile);
     } catch (err) {
@@ -545,27 +555,49 @@ app.get('/descargar-reportes-limpieza', async (req, res) => {
     }
 });
 
+
 app.get('/descargar-reportes-seguridad', async (req, res) => {
+    const { genero } = req.query; // Lee el parámetro de género de la URL
     const client = await pool.connect();
     try {
-        // Realiza una consulta que une ambas tablas
-        const result = await client.query(`
+        // Construye la consulta con el filtro de género si se proporciona
+        let query = `
             SELECT dg.*, rl.*
             FROM DATOS_GENERALES dg
             JOIN RESPUESTAS_SEGURIDAD rl ON dg.ID_PREGUNTA = rl.ID_DATOS_GENERALES
             WHERE dg.ID_CATEGORIA = 3
-        `); // 3 para seguridad
+        `; // 3 para seguridad
+        
+        if (genero) {
+            query += ` AND dg.GENERO = $1`; // Agrega el filtro de género
+        }
 
+        const result = await client.query(query, genero ? [genero.toUpperCase()] : []);
         const datos = result.rows;
 
         // Convierte los datos a una hoja de Excel
         const ws = xlsx.utils.json_to_sheet(datos);
         const wb = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(wb, ws, 'seguridad');
+        xlsx.utils.book_append_sheet(wb, ws, 'Seguridad');
 
+        // Ajuste del encabezado a mayúsculas y ajuste automático de columna
+        const header = Object.keys(datos[0] || {});
+        header.forEach((column, index) => {
+            const cellAddress = xlsx.utils.encode_cell({ c: index, r: 0 });
+            ws[cellAddress].v = column.toUpperCase();
+        });
+
+        // Ajustar el ancho de las columnas automáticamente
+        const columnWidths = header.map((col) => {
+            const maxLength = datos.reduce((max, row) => Math.max(max, row[col]?.toString().length || 0), col.length);
+            return { wch: maxLength + 2 };
+        });
+        ws['!cols'] = columnWidths;
+
+        // Convierte el libro a un archivo Excel y envíalo
         const excelFile = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
 
-        res.setHeader('Content-Disposition', 'attachment; filename=reportes_seguridad.xlsx');
+        res.setHeader('Content-Disposition', `attachment; filename=reportes_seguridad_${genero || 'todos'}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(excelFile);
     } catch (err) {
@@ -576,27 +608,49 @@ app.get('/descargar-reportes-seguridad', async (req, res) => {
     }
 });
 
+
 app.get('/descargar-reportes-administracion', async (req, res) => {
+    const { genero } = req.query; // Lee el parámetro de género de la URL
     const client = await pool.connect();
     try {
-        // Realiza una consulta que une ambas tablas
-        const result = await client.query(`
+        // Construye la consulta con el filtro de género si se proporciona
+        let query = `
             SELECT dg.*, rl.*
             FROM DATOS_GENERALES dg
             JOIN RESPUESTAS_ADMINISTRACION rl ON dg.ID_PREGUNTA = rl.ID_DATOS_GENERALES
             WHERE dg.ID_CATEGORIA = 4
-        `); // 4 para administracion
+        `; // 4 para administración
+        
+        if (genero) {
+            query += ` AND dg.GENERO = $1`; // Agrega el filtro de género
+        }
 
+        const result = await client.query(query, genero ? [genero.toUpperCase()] : []);
         const datos = result.rows;
 
         // Convierte los datos a una hoja de Excel
         const ws = xlsx.utils.json_to_sheet(datos);
         const wb = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(wb, ws, 'administracion');
+        xlsx.utils.book_append_sheet(wb, ws, 'Administracion');
 
+        // Ajuste del encabezado a mayúsculas y ajuste automático de columna
+        const header = Object.keys(datos[0] || {});
+        header.forEach((column, index) => {
+            const cellAddress = xlsx.utils.encode_cell({ c: index, r: 0 });
+            ws[cellAddress].v = column.toUpperCase();
+        });
+
+        // Ajustar el ancho de las columnas automáticamente
+        const columnWidths = header.map((col) => {
+            const maxLength = datos.reduce((max, row) => Math.max(max, row[col]?.toString().length || 0), col.length);
+            return { wch: maxLength + 2 };
+        });
+        ws['!cols'] = columnWidths;
+
+        // Convierte el libro a un archivo Excel y envíalo
         const excelFile = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
 
-        res.setHeader('Content-Disposition', 'attachment; filename=reportes_administracion.xlsx');
+        res.setHeader('Content-Disposition', `attachment; filename=reportes_administracion_${genero || 'todos'}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(excelFile);
     } catch (err) {
@@ -607,13 +661,18 @@ app.get('/descargar-reportes-administracion', async (req, res) => {
     }
 });
 
+
 // Ruta para ver el formulario de candidatura limp
-app.get('/formulario', (req, res) => {
-    res.sendFile(__dirname + '/public/formulario.html');
+app.get('/formularioLimpieza', (req, res) => {
+    res.sendFile(__dirname + '/public/formularioLimpieza.html');
 });
 // Ruta para ver el formulario de candidatura seg
 app.get('/formularioSeguridad', (req, res) => {
     res.sendFile(__dirname + '/public/formularioSeguridad.html');
+});
+// Ruta para ver el formulario de candidatura adm
+app.get('/formularioAdministracion', (req, res) => {
+    res.sendFile(__dirname + '/public/formularioAdministracion.html');
 });
 // Ruta para la página de éxito
 app.get('/success', (req, res) => {
@@ -625,3 +684,18 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+app.get('/api/usuario-actual', (req, res) => {
+    // Suponiendo que has almacenado la información del usuario en el objeto `req.user` después de la autenticación
+    if (req.user) {
+        res.json({ id_usuario: req.user.id_usuario, rol: req.user.rol });
+    } else {
+        res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+});
+
+
+
+
+
+

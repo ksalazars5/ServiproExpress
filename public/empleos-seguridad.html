@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empleos Disponibles en Seguridad</title>
+    <title>Empleos Disponibles en Administracion</title>
     <style>
         * {
             margin: 0;
@@ -40,19 +40,21 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
+        /* Ajusta el estilo de los enlaces para que actúen como botones */
         nav a {
             color: white;
-            padding: 12px 25px;
-            margin: 0 15px;
+            padding: 8px 15px; /* Disminuir el tamaño */
+            margin: 0 5px; /* Margen más pequeño para que estén más juntos */
             text-decoration: none;
             font-weight: bold;
             text-transform: uppercase;
             transition: background-color 0.3s, color 0.3s;
             border-radius: 5px;
+            background-color: #343a40; /* Color de fondo igual */
         }
 
         nav a:hover {
-            background-color: #007bff;
+            background-color: #0056b3; /* Color de fondo al pasar el mouse */
             color: white;
         }
 
@@ -65,22 +67,8 @@
         .botones {
             text-align: center;
             margin: 20px 0;
-        }
-
-        .boton {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            margin: 0 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-
-        .boton:hover {
-            background-color: #0056b3;
+            display: flex; /* Cambiado a flex para alinear los botones */
+            justify-content: center; /* Centrar los botones */
         }
 
         .empleos-container {
@@ -141,6 +129,47 @@
             font-size: 0.9em;
             margin-top: auto;
         }
+
+        .hidden {
+            display: none; /* Oculta completamente el elemento */
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background-color: #343a40; /* Color de fondo del botón */
+            color: white; /* Color del texto */
+            padding: 10px 16px; /* Espaciado interno */
+            font-size: 16px; /* Tamaño de fuente */
+            border: none; /* Sin borde */
+            cursor: pointer; /* Cursor al pasar el ratón */
+        }
+
+        .dropdown-content {
+            display: none; /* Oculto por defecto */
+            position: absolute; /* Posicionamiento absoluto */
+            background-color: #f9f9f9; /* Color de fondo del dropdown */
+            min-width: 160px; /* Ancho mínimo */
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Sombra */
+            z-index: 1; /* Z-index para que esté por encima */
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block; /* Mostrar al pasar el ratón */
+        }
+
+        .dropdown-content a {
+            color: white; /* Color del texto */
+            padding: 12px 16px; /* Espaciado interno */
+            text-decoration: none; /* Sin subrayado */
+            display: block; /* Mostrar como bloque */
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1; /* Color de fondo al pasar el ratón */
+        }
     </style>
 </head>
 <body>
@@ -148,25 +177,74 @@
     <header>
         Plazas Disponibles para Seguridad
     </header>
-
+    
     <nav>
-        <div class="botones">
-            <a href='/formularioPlazaNS.html'>Añadir Plaza</a>
-            <a href='//localhost:3000/success'>Inicio</a>
-            <a class="btn" href="#" onclick="descargarReportesseguridad()">Descargar Reportes de seguridad</a>
+        <div id="admin-menu" class="botones">
+            <a id="inicio-link" href='/success'>Inicio</a>
+            <a id="agregar-plaza-link" href='/formularioPlazaNS.html' style="display: none;">Añadir Plaza</a>
+            <span id="bienvenido"> <span id="usuario"></span></span> <!-- Mensaje de bienvenida -->
+
+            <!-- Dropdown para Descargas -->
+            <div class="dropdown">
+                <a id="descargar-reportes-link" class="btn" href="#" onclick="" style="display: none;">Descargar Reportes de Seguridad</a>
+                <div class="dropdown-content">
+                    <a href="#" onclick="descargarReportesseguridad()">Todo</a>
+                    <a href="#" onclick="descargarReportesseguridad('F')">Mujeres</a>
+                    <a href="#" onclick="descargarReportesseguridad('M')">Hombres</a>
+                </div>
         </div>
     </nav>
-
+    
     <div class="empleos-container" id="empleos-lista"></div>
-
+    
     <footer>
         © 2024 ServiProExpress - Todos los derechos reservados
     </footer>
-
+    
     <script>
+        // Recuperar los datos del usuario desde localStorage
+        const id_usuario = localStorage.getItem('id_usuario');
+        const rol = localStorage.getItem('rol');
+    
+        // Mostrar el nombre de usuario en el DOM
+        document.getElementById('bienvenido').innerText = `Bienvenido, ${id_usuario}`;
+        document.getElementById('bienvenido').style.display = 'none'; // Esto oculta el elemento
+
+        // Controlar la visibilidad del menú
+        if (id_usuario === 'Lucia') {
+            // Si el usuario es "Lucia", mostrar todas las opciones
+            document.getElementById('agregar-plaza-link').style.display = 'block';
+            document.getElementById('descargar-reportes-link').style.display = 'block';
+        } else {
+            // Para otros usuarios, solo mostrar la opción "Inicio"
+            document.getElementById('agregar-plaza-link').style.display = 'none';
+            document.getElementById('descargar-reportes-link').style.display = 'none';
+        }
+
         function descargarReportesseguridad() {
             window.location.href = '/descargar-reportes-seguridad'; // Asegúrate de que esta ruta sea la correcta en tu servidor
         }
+        async function descargarReportesseguridad(genero = '') {
+        try {
+            const response = await fetch(`/descargar-reportes-seguridad?genero=${genero}`);
+            if (!response.ok) {
+                throw new Error('Error en la descarga');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reportes_seguridad_${genero || 'todos'}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error al descargar el archivo:', error);
+            alert('Hubo un problema al descargar el archivo. Por favor, intenta de nuevo.');
+        }
+    }
         // Realiza la solicitud a la API
         fetch('/empleos-seguridad')
             .then(response => {

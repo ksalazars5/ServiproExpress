@@ -5,61 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Candidatura - Administracion</title>
     <style>
-        .radio-group label, .radio-group input {
-            display: inline-block; /* Coloca los elementos en línea */
-            margin-right: 20px; /* Aumenta el espacio entre las opciones */
-            margin-bottom: 10px; /* Agrega espacio vertical entre preguntas */
-            vertical-align: middle; /* Alinea verticalmente los radios con las etiquetas */
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        position: relative; 
+    }
+
+    .collage {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('https://i.pinimg.com/564x/37/de/9d/37de9d734aff802e862616a581da198f.jpg');
+        background-position: center; 
+        background-size: cover; 
+        background-repeat: no-repeat; 
+        opacity: 0.3; 
+        z-index: -1; 
+    }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+            position: relative; 
+        }
+
+        form {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9); 
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative; 
         }
 
         label {
-            display: block; /* Asegura que las preguntas estén en líneas separadas */
-            margin-bottom: 10px; /* Espacio entre las preguntas */
-            font-weight: bold; /* Aumenta la claridad de las preguntas */
-        }
-            body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 20px;
-            background-color: #f0f0f0;
-        }
-        h1 {
+            display: block;
+            font-weight: bold;
+            margin: 15px 0 5px;
             color: #333;
         }
-        form {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            text-align: left;
-        }
-        label {
-            display: block;
-            margin-bottom: 10px;
-        }
-        input[type="text"], input[type="email"], input[type="number"], textarea, select {
-            width: calc(100% - 20px);
+
+        input[type="text"], input[type="email"], input[type="number"], select, textarea {
+            width: 100%;
             padding: 10px;
-            margin: 5px 0 15px;
+            margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 16px;
         }
-        button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
+
+        .radio-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .radio-group input {
+            display: none;
+        }
+
+        .radio-group label {
+            flex: 1;
+            padding: 12px 20px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .radio-group input:checked + label {
+            background-color: #007bff;
             color: white;
+        }
+
+        .button, a.button {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            text-decoration: none;
             border: none;
             border-radius: 5px;
+            font-size: 18px;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
-        button:hover {
-            background-color: #45a049;
+
+        .button:hover, a.button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 <body>
+    <div class="collage"></div>
+
     <body>
         <h1>Formulario de Candidatura - Administración</h1>
         <form action="/guardar-datos-admin" method="POST">
@@ -92,14 +149,22 @@
     
             <label for="genero">Género:</label>
             <select id="genero" name="genero" required>
+                <option value="" disabled selected>Selecciona una opción</option>
                 <option value="M">Masculino</option>
                 <option value="F">Femenino</option>
                 <option value="O">Otro</option>
             </select>
     
             <label for="grado_academico">¿Cuál es su grado académico?</label>
-            <input type="text" id="grado_academico" name="grado_academico" required>
-    
+            <select id="grado_academico" name="grado_academico" required>
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option value="P">PRIMARIA</option>
+                <option value="B">BASICOS</option>
+                <option value="D">DIVERSIFICADO</option>
+                <option value="U">UNIVERSITARIO</option>
+            </select>
+
+
             <label for="anos_experiencia">¿Cuántos años de experiencia tiene en el área?</label>
             <input type="number" id="anios_experiencia" name="anios_experiencia" required>
     
@@ -121,11 +186,8 @@
             <label for="equipos_oficina_no_puede_usar">¿Qué equipos de oficina no puede usar?</label>
             <textarea id="equipos_oficina_no_puede_usar" name="equipos_oficina_no_puede_usar" required></textarea>
     
-            <button type="submit">Enviar</button>
-            
-            <p style="margin-bottom: 30px;">
-                <a href="http://localhost:3000/empleos-administracion.html">Regresar</a>
-            </p> 
+            <button type="submit" class="button">Enviar</button>
+            <a href="/empleos-administracion.html" class="button">Regresar</a>
         </form>
     </body>
     </html>
