@@ -6,6 +6,7 @@
     "body-parser": "^1.20.3",
     "connect-pg-simple": "^10.0.0",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.21.0",
     "express-session": "^1.18.1",
     "json2csv": "^6.0.0-alpha.2",

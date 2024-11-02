@@ -6,7 +6,7 @@
     <title>Iniciar Sesión</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap');
-
+    
         * {
             margin: 0;
             padding: 0;
@@ -39,7 +39,7 @@
             padding: 40px 30px;
             border-radius: 12px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            width: 350px;
+            width: 450px;
             text-align: center;
             z-index: 1; 
         }
@@ -80,6 +80,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin-top: 20px; /* Espacio entre el botón y el campo de contraseña */
         }
         button:hover {
             background-color: #e65e50;
@@ -105,41 +106,135 @@
     </style>
 </head>
 <body>
-    <!-- Contenedor para el collage -->
     <div class="collage"></div>
 
-    <!-- Cuadro de login -->
     <div class="login-container">
-        <h1>Iniciar Sesión</h1>
+        <h1 id="form-title">Iniciar Sesión</h1>
+        
+        <!-- Formulario de inicio de sesión -->
         <form id="loginForm" onsubmit="iniciarSesion(event)">
             <input type="text" id="username" placeholder="Nombre de usuario" required>
             <input type="password" id="password" placeholder="Contraseña" required>
             <button type="submit">Iniciar Sesión</button>
         </form>
+
+        <!-- Formulario de registro -->
+        <form id="registerForm" style="display: none;" onsubmit="registrarUsuario(event)">
+            <input type="text" id="newUsername" placeholder="Nombre de usuario" required>
+            <input type="password" id="newPassword" placeholder="Contraseña" required>
+            <button type="submit">Crear Usuario</button>
+        </form>
+
         <div class="forgot-password">
-            <a href="#">¿Olvidaste tu contraseña?</a>
+            <span id="toggleFormText">¿No tienes cuenta?</span> 
+            <a href="#" id="toggleFormLink" onclick="toggleForm()">Crear usuario</a>
         </div>     
-        <script>
-            function iniciarSesion(event) {
-                event.preventDefault(); // Evita el envío del formulario
-            
-                // Simulación de validación de usuario
-                const usuario = {
-                    id_usuario: document.getElementById('username').value,
-                    rol: "admin" // Asigna el rol que corresponda según la validación
-                };
-            
-                // Almacenar en localStorage
-                localStorage.setItem('id_usuario', usuario.id_usuario);
-                localStorage.setItem('rol', usuario.rol);
-            
-                // Redirigir o hacer algo después del inicio de sesión
-                window.location.href = '/success'; // o el nombre de la ruta configurada
-            }
-            </script>    
+
         <div class="footer-text">
             &copy; 2024 ServiPro Todos los derechos reservados.
         </div>
     </div>
+
+    <script>
+        function toggleForm() {
+            const loginForm = document.getElementById("loginForm");
+            const registerForm = document.getElementById("registerForm");
+            const formTitle = document.getElementById("form-title");
+            const toggleFormText = document.getElementById("toggleFormText");
+            const toggleFormLink = document.getElementById("toggleFormLink");
+
+            if (loginForm.style.display === "none") {
+                loginForm.style.display = "block";
+                registerForm.style.display = "none";
+                formTitle.textContent = "Iniciar Sesión";
+                toggleFormText.textContent = "¿No tienes cuenta?";
+                toggleFormLink.textContent = "Crear usuario";
+            } else {
+                loginForm.style.display = "none";
+                registerForm.style.display = "block";
+                formTitle.textContent = "Crear Usuario";
+                toggleFormText.textContent = "¿Ya tienes cuenta?";
+                toggleFormLink.textContent = "Iniciar sesión";
+            }
+        }
+
+        function iniciarSesion(event) {
+            event.preventDefault();
+
+            const usuario = {
+                id_usuario: document.getElementById('username').value,
+                rol: "admin"
+            };
+
+            localStorage.setItem('id_usuario', usuario.id_usuario);
+            localStorage.setItem('rol', usuario.rol);
+
+            window.location.href = '/success';
+        }
+
+        function registrarUsuario(event) {
+    event.preventDefault();
+
+    const usuario = {
+        id_usuario: document.getElementById('newUsername').value,
+        password: document.getElementById('newPassword').value,
+        rol: "usuario" // Rol asignado por defecto
+    };
+
+    fetch('/api/registrarUsuario', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(usuario)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Usuario creado exitosamente. Ahora puede iniciar sesión.");
+            toggleForm(); // Cambiar al formulario de inicio de sesión
+        } else {
+            alert("Hubo un problema al crear el usuario.");
+        }
+    })
+    .catch(error => {
+        console.error("Error al registrar usuario:", error);
+        alert("Error al registrar usuario.");
+    });
+}
+
+function iniciarSesion(event) {
+    event.preventDefault();
+
+    const usuario = {
+        id_usuario: document.getElementById('username').value,
+        password: document.getElementById('password').value
+    };
+
+    fetch('/api/iniciarSesion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(usuario)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Almacenar en localStorage y redirigir
+            localStorage.setItem('id_usuario', usuario.id_usuario);
+            localStorage.setItem('rol', data.rol); // Asume que el backend envía el rol
+            window.location.href = '/success'; // Ruta de éxito
+        } else {
+            alert("Usuario o contraseña incorrectos.");
+        }
+    })
+    .catch(error => {
+        console.error("Error al iniciar sesión:", error);
+        alert("Error al iniciar sesión.");
+    });
+}
+
+    </script>
 </body>
 </html>

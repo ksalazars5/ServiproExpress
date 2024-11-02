@@ -184,14 +184,18 @@
             <a id="agregar-plaza-link" href='/formularioPlazaNA.html' style="display: none;">Añadir Plaza</a>
             <span id="bienvenido"> <span id="usuario"></span></span> <!-- Mensaje de bienvenida -->
 
-            <!-- Dropdown para Descargas -->
-            <div class="dropdown">
-                <a id="descargar-reportes-link" class="btn" href="#" onclick=" " style="display: none;">Descargar Reportes de Administración</a>
-                <div class="dropdown-content">
-                    <a href="#" onclick="descargarReportesadministracion()">Todo</a>
-                    <a href="#" onclick="descargarReportesadministracion('F')">Mujeres</a>
-                    <a href="#" onclick="descargarReportesadministracion('M')">Hombres</a>
-                </div>
+    <!-- Dropdown para Descargas -->
+    <div class="dropdown">
+        <a id="descargar-reportes-link" class="btn" href="#" onclick=" " style="display: none;">Descargar Reportes de Administración</a>
+        <div class="dropdown-content">
+            <a href="#" onclick="descargarReportesadministracion()">Todo</a>
+            <a href="#" onclick="descargarReportesadministracion('F')">Mujeres</a>
+            <a href="#" onclick="descargarReportesadministracion('M')">Hombres</a>
+            <a href="#" onclick="descargarReportesadministracion('', 'P')">Primaria</a>
+            <a href="#" onclick="descargarReportesadministracion('', 'B')">Básicos</a>
+            <a href="#" onclick="descargarReportesadministracion('', 'D')">Diversificado</a>
+            <a href="#" onclick="descargarReportesadministracion('', 'U')">Universitario</a>            
+        </div>
         </div>
     </nav>
     
@@ -205,7 +209,7 @@
         // Recuperar los datos del usuario desde localStorage
         const id_usuario = localStorage.getItem('id_usuario');
         const rol = localStorage.getItem('rol');
-    
+        
         // Mostrar el nombre de usuario en el DOM
         document.getElementById('bienvenido').innerText = `Bienvenido, ${id_usuario}`;
         document.getElementById('bienvenido').style.display = 'none'; // Esto oculta el elemento
@@ -215,6 +219,7 @@
             // Si el usuario es "Lucia", mostrar todas las opciones
             document.getElementById('agregar-plaza-link').style.display = 'block';
             document.getElementById('descargar-reportes-link').style.display = 'block';
+            
         } else {
             // Para otros usuarios, solo mostrar la opción "Inicio"
             document.getElementById('agregar-plaza-link').style.display = 'none';
@@ -225,27 +230,34 @@
             window.location.href = '/descargar-reportes-administracion';
         }
 
-        async function descargarReportesadministracion(genero = '') {
-        try {
-            const response = await fetch(`/descargar-reportes-administracion?genero=${genero}`);
-            if (!response.ok) {
-                throw new Error('Error en la descarga');
-            }
-            
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `reportes_administracion_${genero || 'todos'}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error al descargar el archivo:', error);
-            alert('Hubo un problema al descargar el archivo. Por favor, intenta de nuevo.');
+        async function descargarReportesadministracion(genero = '', grado_academico = '') {
+    try {
+        // Verifica los parámetros en la consola
+        console.log(`Descargando reportes con género: ${genero}, grado académico: ${grado_academico}`);
+        
+        const response = await fetch(`/descargar-reportes-administracion?genero=${genero}&grado_academico=${grado_academico}`);
+        
+        if (!response.ok) {
+            throw new Error('Error en la descarga');
         }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reportes_administracion_${genero || 'todos'}_${grado_academico || 'todos'}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error al descargar el archivo:', error);
+        alert('Hubo un problema al descargar el archivo. Por favor, intenta de nuevo.');
     }
+}
+
+
+
         // Cargar los empleos de administración desde la API
         fetch('/empleos-administracion')
             .then(response => {

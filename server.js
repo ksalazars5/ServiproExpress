@@ -290,7 +290,7 @@ app.post('/guardar-datos-seguridad', async (req, res) => {
         grado_academico,
         anios_experiencia,
         disponibilidad_rotativos,
-        motivo_renuncia,
+        motivo_renuncia_despido,
         antecedentes,
         explicacion_antecedentes,
         detenciones,
@@ -316,7 +316,7 @@ app.post('/guardar-datos-seguridad', async (req, res) => {
         await client.query(
             `INSERT INTO RESPUESTAS_SEGURIDAD (ID_DATOS_GENERALES, GRADO_ACADEMICO, ANIOS_EXPERIENCIA, DISPONIBILIDAD_ROTATIVOS, MOTIVO_RENUNCIA_DESPIDO, 
             ANTECEDENTES, EXPLICACION_ANTECEDENTES, DETENCIONES, EXPLICACION_DETENCIONES, LICENCIA_ARMA, TIPO_LICENCIA, FUNCIONES_SEGURIDAD) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-            [idDatosGenerales, grado_academico, anios_experiencia, disponibilidad_rotativos, motivo_renuncia, 
+            [idDatosGenerales, grado_academico, anios_experiencia, disponibilidad_rotativos, motivo_renuncia_despido, 
             antecedentes, explicacion_antecedentes, detenciones, explicacion_detenciones, licencia_arma, tipo_licencia, funciones_seguridad]
         );
 
@@ -504,49 +504,86 @@ app.delete('/delete-plaza-administracion/:id', async (req, res) => {
 });
 
 app.get('/descargar-reportes-limpieza', async (req, res) => {
-    const { genero } = req.query; // Lee el parámetro de género de la URL
+    const { genero, grado_academico } = req.query; // Lee ambos parámetros de la URL
     const client = await pool.connect();
     try {
-        // Construye la consulta con el filtro de género si se proporciona
+        // Construye la consulta con los filtros de género y grado académico si se proporcionan
         let query = `
             SELECT dg.*, rl.*
             FROM DATOS_GENERALES dg
             JOIN RESPUESTAS_LIMPIEZA rl ON dg.ID_PREGUNTA = rl.ID_DATOS_GENERALES
             WHERE dg.ID_CATEGORIA = 2
-        `;
-        
+        `; // 2 para limpieza
+
+        const queryParams = []; // Para almacenar los parámetros de consulta
+
+        // Agregar filtro de género si está presente
         if (genero) {
-            query += ` AND dg.GENERO = $1`; // Agrega el filtro de género
+            query += ` AND dg.GENERO = $${queryParams.length + 1}`; // Agrega el filtro de género
+            queryParams.push(genero.toUpperCase()); // Asegura que el género esté en mayúsculas
         }
-        
-        const result = await client.query(query, genero ? [genero.toUpperCase()] : []);
+
+        // Agregar filtro de grado académico si está presente
+        if (grado_academico) {
+            query += ` AND rl.GRADO_ACADEMICO = $${queryParams.length + 1}`; // Agrega el filtro de grado académico
+            queryParams.push(grado_academico); // Agrega a los parámetros
+        }
+
+        // Ejecutar la consulta
+        const result = await client.query(query, queryParams);
         const datos = result.rows;
 
-        // Convierte los datos a una hoja de Excel
-        const ws = xlsx.utils.json_to_sheet(datos);
-        const wb = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(wb, ws, 'Limpieza');
+        // Crear un nuevo libro de Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Limpieza');
 
-        // Ajuste del encabezado a mayúsculas y ajuste automático de columna
+        // Ajuste del encabezado a mayúsculas y aplicar estilo
         const header = Object.keys(datos[0] || {});
-        header.forEach((column, index) => {
-            const cellAddress = xlsx.utils.encode_cell({ c: index, r: 0 });
-            ws[cellAddress].v = column.toUpperCase();
+        worksheet.addRow(header.map(col => col.toUpperCase())); // Agregar la fila de encabezado
+
+        // Aplicar estilos al encabezado
+        const headerRow = worksheet.getRow(1);
+        headerRow.eachCell((cell) => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'E4DFEC' } // Color de fondo #E4DFEC
+            };
+            cell.font = {
+                bold: true,
+                color: { argb: '000000' } // Color de texto negro
+            };
+            cell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle'
+            };
+        });
+
+        // Agregar datos y aplicar alineación centrada
+        datos.forEach(row => {
+            const newRow = worksheet.addRow(Object.values(row));
+
+            // Aplicar alineación centrada a las celdas de la fila
+            newRow.eachCell((cell) => {
+                cell.alignment = {
+                    horizontal: 'center',
+                    vertical: 'middle'
+                };
+            });
         });
 
         // Ajustar el ancho de las columnas automáticamente
-        const columnWidths = header.map((col) => {
-            const maxLength = datos.reduce((max, row) => Math.max(max, row[col]?.toString().length || 0), col.length);
-            return { wch: maxLength + 2 };
+        worksheet.columns.forEach(column => {
+            const maxLength = column.values.reduce((max, value) => Math.max(max, (value || '').toString().length), 0);
+            column.width = maxLength + 2; // +2 para dar un poco de espacio extra
         });
-        ws['!cols'] = columnWidths;
 
-        // Convierte el libro a un archivo Excel y envíalo
-        const excelFile = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
-
-        res.setHeader('Content-Disposition', `attachment; filename=reportes_limpieza_${genero || 'todos'}.xlsx`);
+        // Envía el archivo Excel
+        res.setHeader('Content-Disposition', `attachment; filename=reportes_limpieza_${genero || 'todos'}_${grado_academico || 'todos'}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.send(excelFile);
+
+        await workbook.xlsx.write(res); // Escribir el archivo en la respuesta
+        res.end(); // Finalizar la respuesta
     } catch (err) {
         console.error('Error al generar el Excel:', err.message);
         res.status(500).send('Error en el servidor');
@@ -557,49 +594,86 @@ app.get('/descargar-reportes-limpieza', async (req, res) => {
 
 
 app.get('/descargar-reportes-seguridad', async (req, res) => {
-    const { genero } = req.query; // Lee el parámetro de género de la URL
+    const { genero, grado_academico } = req.query; // Lee ambos parámetros de la URL
     const client = await pool.connect();
     try {
-        // Construye la consulta con el filtro de género si se proporciona
+        // Construye la consulta con los filtros de género y grado académico si se proporcionan
         let query = `
             SELECT dg.*, rl.*
             FROM DATOS_GENERALES dg
             JOIN RESPUESTAS_SEGURIDAD rl ON dg.ID_PREGUNTA = rl.ID_DATOS_GENERALES
             WHERE dg.ID_CATEGORIA = 3
         `; // 3 para seguridad
-        
+
+        const queryParams = []; // Para almacenar los parámetros de consulta
+
+        // Agregar filtro de género si está presente
         if (genero) {
-            query += ` AND dg.GENERO = $1`; // Agrega el filtro de género
+            query += ` AND dg.GENERO = $${queryParams.length + 1}`; // Agrega el filtro de género
+            queryParams.push(genero.toUpperCase()); // Asegura que el género esté en mayúsculas
         }
 
-        const result = await client.query(query, genero ? [genero.toUpperCase()] : []);
+        // Agregar filtro de grado académico si está presente
+        if (grado_academico) {
+            query += ` AND rl.GRADO_ACADEMICO = $${queryParams.length + 1}`; // Agrega el filtro de grado académico
+            queryParams.push(grado_academico); // Agrega a los parámetros
+        }
+
+        // Ejecutar la consulta
+        const result = await client.query(query, queryParams);
         const datos = result.rows;
 
-        // Convierte los datos a una hoja de Excel
-        const ws = xlsx.utils.json_to_sheet(datos);
-        const wb = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(wb, ws, 'Seguridad');
+        // Crear un nuevo libro de Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Seguridad');
 
-        // Ajuste del encabezado a mayúsculas y ajuste automático de columna
+        // Ajuste del encabezado a mayúsculas y aplicar estilo
         const header = Object.keys(datos[0] || {});
-        header.forEach((column, index) => {
-            const cellAddress = xlsx.utils.encode_cell({ c: index, r: 0 });
-            ws[cellAddress].v = column.toUpperCase();
+        worksheet.addRow(header.map(col => col.toUpperCase())); // Agregar la fila de encabezado
+
+        // Aplicar estilos al encabezado
+        const headerRow = worksheet.getRow(1);
+        headerRow.eachCell((cell) => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'E4DFEC' } // Color de fondo #E4DFEC
+            };
+            cell.font = {
+                bold: true,
+                color: { argb: '000000' } // Color de texto negro
+            };
+            cell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle'
+            };
+        });
+
+        // Agregar datos y aplicar alineación centrada
+        datos.forEach(row => {
+            const newRow = worksheet.addRow(Object.values(row));
+
+            // Aplicar alineación centrada a las celdas de la fila
+            newRow.eachCell((cell) => {
+                cell.alignment = {
+                    horizontal: 'center',
+                    vertical: 'middle'
+                };
+            });
         });
 
         // Ajustar el ancho de las columnas automáticamente
-        const columnWidths = header.map((col) => {
-            const maxLength = datos.reduce((max, row) => Math.max(max, row[col]?.toString().length || 0), col.length);
-            return { wch: maxLength + 2 };
+        worksheet.columns.forEach(column => {
+            const maxLength = column.values.reduce((max, value) => Math.max(max, (value || '').toString().length), 0);
+            column.width = maxLength + 2; // +2 para dar un poco de espacio extra
         });
-        ws['!cols'] = columnWidths;
 
-        // Convierte el libro a un archivo Excel y envíalo
-        const excelFile = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
-
-        res.setHeader('Content-Disposition', `attachment; filename=reportes_seguridad_${genero || 'todos'}.xlsx`);
+        // Envía el archivo Excel
+        res.setHeader('Content-Disposition', `attachment; filename=reportes_seguridad_${genero || 'todos'}_${grado_academico || 'todos'}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.send(excelFile);
+
+        await workbook.xlsx.write(res); // Escribir el archivo en la respuesta
+        res.end(); // Finalizar la respuesta
     } catch (err) {
         console.error('Error al generar el Excel:', err.message);
         res.status(500).send('Error en el servidor');
@@ -608,51 +682,88 @@ app.get('/descargar-reportes-seguridad', async (req, res) => {
     }
 });
 
+const ExcelJS = require('exceljs');
 
 app.get('/descargar-reportes-administracion', async (req, res) => {
-    const { genero } = req.query; // Lee el parámetro de género de la URL
+    const { genero, grado_academico } = req.query; // Lee ambos parámetros de la URL
     const client = await pool.connect();
     try {
-        // Construye la consulta con el filtro de género si se proporciona
+        // Construye la consulta con los filtros de género y grado académico si se proporcionan
         let query = `
             SELECT dg.*, rl.*
             FROM DATOS_GENERALES dg
             JOIN RESPUESTAS_ADMINISTRACION rl ON dg.ID_PREGUNTA = rl.ID_DATOS_GENERALES
             WHERE dg.ID_CATEGORIA = 4
         `; // 4 para administración
-        
+
+        const queryParams = []; // Para almacenar los parámetros de consulta
+
+        // Agregar filtro de género si está presente
         if (genero) {
-            query += ` AND dg.GENERO = $1`; // Agrega el filtro de género
+            query += ` AND dg.GENERO = $${queryParams.length + 1}`; // Agrega el filtro de género
+            queryParams.push(genero.toUpperCase()); // Asegura que el género esté en mayúsculas
         }
 
-        const result = await client.query(query, genero ? [genero.toUpperCase()] : []);
+        // Agregar filtro de grado académico si está presente
+        if (grado_academico) {
+            query += ` AND rl.GRADO_ACADEMICO = $${queryParams.length + 1}`; // Agrega el filtro de grado académico
+            queryParams.push(grado_academico); // Agrega a los parámetros
+        }
+
+        // Ejecutar la consulta
+        const result = await client.query(query, queryParams);
         const datos = result.rows;
 
-        // Convierte los datos a una hoja de Excel
-        const ws = xlsx.utils.json_to_sheet(datos);
-        const wb = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(wb, ws, 'Administracion');
+        // Crear un nuevo libro de Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Administracion');
 
-        // Ajuste del encabezado a mayúsculas y ajuste automático de columna
+        // Ajuste del encabezado a mayúsculas y aplicar estilo
         const header = Object.keys(datos[0] || {});
-        header.forEach((column, index) => {
-            const cellAddress = xlsx.utils.encode_cell({ c: index, r: 0 });
-            ws[cellAddress].v = column.toUpperCase();
+        worksheet.addRow(header.map(col => col.toUpperCase())); // Agregar la fila de encabezado
+
+        // Aplicar estilos al encabezado
+        const headerRow = worksheet.getRow(1);
+        headerRow.eachCell((cell) => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'E4DFEC' } // Color de fondo #E4DFEC
+            };
+            cell.font = {
+                bold: true,
+                color: { argb: '000000' } // Color de texto negro
+            };
+            cell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle'
+            };
+        });
+
+        // Agregar datos y aplicar alineación centrada
+        datos.forEach(row => {
+            const newRow = worksheet.addRow(Object.values(row));
+
+            // Aplicar alineación centrada a las celdas de la fila
+            newRow.eachCell((cell) => {
+                cell.alignment = {
+                    horizontal: 'center',
+                    vertical: 'middle'
+                };
+            });
         });
 
         // Ajustar el ancho de las columnas automáticamente
-        const columnWidths = header.map((col) => {
-            const maxLength = datos.reduce((max, row) => Math.max(max, row[col]?.toString().length || 0), col.length);
-            return { wch: maxLength + 2 };
+        worksheet.columns.forEach(column => {
+            const maxLength = column.values.reduce((max, value) => Math.max(max, (value || '').toString().length), 0);
+            column.width = maxLength + 2; // +2 para dar un poco de espacio extra
         });
-        ws['!cols'] = columnWidths;
-
-        // Convierte el libro a un archivo Excel y envíalo
-        const excelFile = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
-
-        res.setHeader('Content-Disposition', `attachment; filename=reportes_administracion_${genero || 'todos'}.xlsx`);
+        // Envía el archivo Excel
+        res.setHeader('Content-Disposition', `attachment; filename=reportes_administracion_${genero || 'todos'}_${grado_academico || 'todos'}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.send(excelFile);
+
+        await workbook.xlsx.write(res); // Escribir el archivo en la respuesta
+        res.end(); // Finalizar la respuesta
     } catch (err) {
         console.error('Error al generar el Excel:', err.message);
         res.status(500).send('Error en el servidor');
@@ -660,8 +771,6 @@ app.get('/descargar-reportes-administracion', async (req, res) => {
         client.release();
     }
 });
-
-
 // Ruta para ver el formulario de candidatura limp
 app.get('/formularioLimpieza', (req, res) => {
     res.sendFile(__dirname + '/public/formularioLimpieza.html');
@@ -691,6 +800,50 @@ app.get('/api/usuario-actual', (req, res) => {
         res.json({ id_usuario: req.user.id_usuario, rol: req.user.rol });
     } else {
         res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+});
+
+app.post('/api/registrarUsuario', async (req, res) => {
+    const { id_usuario, password, rol } = req.body;
+
+    try {
+        // Suponiendo que tienes una conexión configurada y tu tabla de usuarios en la base de datos
+        const query = 'INSERT INTO USUARIO (ID_USUARIO, PASSWORD, ROL) VALUES ($1, $2, $3)';
+        const values = [id_usuario, password, rol];
+
+        await pool.query(query, values);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error al insertar usuario:", error);
+        res.status(500).json({ success: false, message: "Error al registrar usuario" });
+    }
+});
+
+// En tu archivo server.js o donde configuras las rutas
+app.post('/api/iniciarSesion', async (req, res) => {
+    const { id_usuario, password } = req.body;
+
+    try {
+        // Consultar la base de datos para ver si el usuario existe
+        const query = 'SELECT * FROM USUARIO WHERE ID_USUARIO = $1';
+        const values = [id_usuario];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length > 0) {
+            const usuario = result.rows[0];
+
+            // Validación de contraseña (puedes ajustar esto según tu sistema de encriptación)
+            if (usuario.password === password) {
+                res.json({ success: true, rol: usuario.rol });
+            } else {
+                res.json({ success: false, message: "Contraseña incorrecta" });
+            }
+        } else {
+            res.json({ success: false, message: "Usuario no existe" });
+        }
+    } catch (error) {
+        console.error("Error al iniciar sesión:", error);
+        res.status(500).json({ success: false, message: "Error en el servidor" });
     }
 });
 

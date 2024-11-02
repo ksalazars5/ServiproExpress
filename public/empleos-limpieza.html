@@ -186,11 +186,15 @@
             
             <!-- Dropdown para Descargas -->
             <div class="dropdown">
-                <a id="descargar-reportes-link" class="btn" href="#" onclick="" style="display: none;">Descargar Reportes de Limpieza</a>
+                <a id="descargar-reportes-link" class="btn" href="#" onclick="" style="display: none;">Descargar Reportes de Administración</a>
                 <div class="dropdown-content">
                     <a href="#" onclick="descargarReporteslimpieza()">Todo</a>
                     <a href="#" onclick="descargarReporteslimpieza('F')">Mujeres</a>
                     <a href="#" onclick="descargarReporteslimpieza('M')">Hombres</a>
+                    <a href="#" onclick="descargarReporteslimpieza('', 'P')">Primaria</a>
+                    <a href="#" onclick="descargarReporteslimpieza('', 'B')">Básicos</a>
+                    <a href="#" onclick="descargarReporteslimpieza('', 'D')">Diversificado</a>
+                    <a href="#" onclick="descargarReporteslimpieza('', 'U')">Universitario</a>            
                 </div>
             </div>
         </div>
@@ -230,27 +234,33 @@
 
             window.location.href = url;
         }
-        async function descargarReporteslimpieza(genero = '') {
-        try {
-            const response = await fetch(`/descargar-reportes-limpieza?genero=${genero}`);
-            if (!response.ok) {
-                throw new Error('Error en la descarga');
-            }
-            
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `reportes_limpieza_${genero || 'todos'}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error al descargar el archivo:', error);
-            alert('Hubo un problema al descargar el archivo. Por favor, intenta de nuevo.');
+        async function descargarReporteslimpieza(genero = '', grado_academico = '') {
+    try {
+        // Verifica los parámetros en la consola
+        console.log(`Descargando reportes de limpieza con género: ${genero}, grado académico: ${grado_academico}`);
+        
+        // Modifica la URL para incluir ambos parámetros
+        const response = await fetch(`/descargar-reportes-limpieza?genero=${genero}&grado_academico=${grado_academico}`);
+        
+        if (!response.ok) {
+            throw new Error('Error en la descarga');
         }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        // Ajusta el nombre del archivo para incluir grado académico
+        a.href = url;
+        a.download = `reportes_limpieza_${genero || 'todos'}_${grado_academico || 'todos'}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error al descargar el archivo:', error);
+        alert('Hubo un problema al descargar el archivo. Por favor, intenta de nuevo.');
     }
+}
      // Realiza la solicitud a la API
         fetch('/empleos-limpieza')
             .then(response => {
