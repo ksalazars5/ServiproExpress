@@ -171,7 +171,7 @@
 </head>
 <body>
     <header>
-        Sistema de Empleo - Añadir Plaza Limpieza
+        Sistema de Empleo - Añadir Plaza Seguridad
     </header>
 
     <div class="container">
@@ -179,7 +179,7 @@
             <h2>Añadir Plaza</h2>
             <form id="form-agregar-plaza" action="/add-plaza-limpieza" method="POST">
                 <label for="descripcion">Descripción:</label>
-                <input type="text" id="descrsipcion" name="descripcion" required>
+                <input type="text" id="descripcion" name="descripcion" required>
 
                 <label for="disponible">
                     <input type="checkbox" id="disponible" name="disponible"> Disponible
@@ -194,34 +194,55 @@
             <button onclick="window.location.href='/empleos-limpieza.html'">Volver al Inicio</button>
 
 
-            <h2>Lista de Plazas</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Descripción</th>
-                            <th>Disponible</th>
-                            <th>Fecha de creación</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="plazas-table">
-                        <!-- Las plazas se llenarán dinámicamente desde JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <footer>Sistema de Empleo © 2024</footer>
+    <h2>Lista de Plazas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Disponible</th>
+                <th>Fecha de creación</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="plazas-table">
+            <!-- Las plazas se llenarán dinámicamente desde JS -->
+        </tbody>
+    </table>
 
     <script>
+        document.getElementById('form-agregar-plaza').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Evita el comportamiento por defecto del formulario
+            const descripcion = document.getElementById('descripcion').value;
+            const disponible = document.getElementById('disponible').checked;
+            const fecha_creacion = document.getElementById('fecha_creacion').value;
+
+            try {
+                const response = await fetch('/add-plaza-limpieza', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ descripcion, disponible, fecha_creacion })
+                });
+                if (response.ok) {
+                    alert('Plaza añadida exitosamente.');
+                    fetchPlazas(); // Actualiza la lista de plazas
+                    document.getElementById('form-agregar-plaza').reset(); // Reinicia el formulario
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error al añadir la plaza: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error al realizar la solicitud POST:', error);
+            }
+        });
+
         async function fetchPlazas() {
             try {
-                const response = await fetch('/empleos-limpieza');
+                const response = await fetch('/empleos-limpieza');  // Llama a la ruta que obtiene todas las plazas
                 const plazas = await response.json();
-                renderPlazas(plazas);
+                renderPlazas(plazas); // Renderiza todas las plazas
             } catch (error) {
                 console.error('Error al obtener las plazas:', error);
             }
@@ -229,30 +250,35 @@
 
         function renderPlazas(plazas) {
             const plazasTable = document.getElementById('plazas-table');
-            plazasTable.innerHTML = '';
+            plazasTable.innerHTML = ''; // Limpia la tabla antes de volver a renderizar
 
             plazas.forEach(plaza => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${plaza.id_reclutamiento}</td>
-                    <td>${plaza.descripcion}</td>
-                    <td>${plaza.disponible ? 'Sí' : 'No'}</td>
-                    <td>${new Date(plaza.fecha_creacion).toLocaleDateString()}</td>
-                    <td>
-                        <button onclick="deletePlaza(${plaza.id_reclutamiento})">Eliminar</button>
-                    </td>
-                `;
+                <td>${plaza.id_reclutamiento}</td>
+                <td>${plaza.descripcion}</td>
+                <td>${plaza.disponible ? 'Si' : 'Si'}</td>
+                <td>${new Date(plaza.fecha_creacion).toLocaleDateString()}</td>
+                <td>
+                    <button onclick="deletePlaza(${plaza.id_reclutamiento})">Eliminar</button>
+                </td>
+            `;
+
                 plazasTable.appendChild(row);
             });
         }
 
         async function deletePlaza(id) {
+            console.log('ID de la plaza a eliminar:', id); // Log del ID
             const confirmation = confirm('¿Estás seguro de que quieres eliminar esta plaza?');
             if (confirmation) {
                 try {
-                    const response = await fetch(`/delete-plaza/${id}`, { method: 'DELETE' });
+                    const response = await fetch(`/delete-plaza-seguridad/${id}`, {
+                        method: 'DELETE'
+                    });
+                    console.log('Respuesta del servidor:', response); // Log de respuesta
                     if (response.ok) {
-                        fetchPlazas();
+                        fetchPlazas(); // Actualiza la lista de plazas
                     } else {
                         const errorText = await response.text();
                         alert(`Error al eliminar la plaza: ${errorText}`);
@@ -262,6 +288,8 @@
                 }
             }
         }
+
+        // Llama a fetchPlazas al cargar la página
         fetchPlazas();
     </script>
 </body>

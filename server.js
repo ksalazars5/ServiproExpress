@@ -58,7 +58,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static('public'));
 //limpieza a la base de datos limpieza
@@ -78,7 +77,7 @@ app.get('/empleos-limpieza', async (req, res) => {
         client.release();
     }
 });
-// Endpoint para añadir una nueva plaza limpieza
+// Endpoint para añadir una nueva plaza de administración
 app.post('/add-plaza-limpieza', async (req, res) => {
     const { descripcion, disponible, fecha_creacion } = req.body;
     const client = await pool.connect();
@@ -86,7 +85,7 @@ app.post('/add-plaza-limpieza', async (req, res) => {
         // Inserta el nuevo empleo en la base de datos
         const result = await client.query(
             'INSERT INTO RECLUTAMIENTO (ID_CATEGORIA, DESCRIPCION, DISPONIBLE, FECHA_CREACION) VALUES ($1, $2, $3, $4)',
-            [2, descripcion, disponible, fecha_creacion] // Asumiendo que 2 es el ID de la categoría "seguridad"
+            [2, descripcion, disponible, fecha_creacion] // Asumiendo que 3 es el ID de la categoría "seguridad"
         );
         res.status(201).json({ message: 'Plaza añadida exitosamente.' });
     } catch (err) {
