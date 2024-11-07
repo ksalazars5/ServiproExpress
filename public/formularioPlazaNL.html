@@ -171,7 +171,7 @@
 </head>
 <body>
     <header>
-        Sistema de Empleo - Añadir Plaza Seguridad
+        Sistema de Empleo - Añadir Plaza limpieza
     </header>
 
     <div class="container">
@@ -180,16 +180,18 @@
             <form id="form-agregar-plaza" action="/add-plaza-limpieza" method="POST">
                 <label for="descripcion">Descripción:</label>
                 <input type="text" id="descripcion" name="descripcion" required>
-
+            
                 <label for="disponible">
                     <input type="checkbox" id="disponible" name="disponible"> Disponible
                 </label>
-
+            
                 <label for="fecha_creacion">Fecha de creación:</label>
                 <input type="date" id="fecha_creacion" name="fecha_creacion" required>
-
+            
                 <button type="submit">Añadir Plaza</button>
             </form>
+            
+            
 
             <button onclick="window.location.href='/empleos-limpieza.html'">Volver al Inicio</button>
 
@@ -211,32 +213,36 @@
     </table>
 
     <script>
-        document.getElementById('form-agregar-plaza').addEventListener('submit', async (event) => {
-            event.preventDefault(); // Evita el comportamiento por defecto del formulario
-            const descripcion = document.getElementById('descripcion').value;
-            const disponible = document.getElementById('disponible').checked;
-            const fecha_creacion = document.getElementById('fecha_creacion').value;
+document.getElementById('form-agregar-plaza').addEventListener('submit', async (event) => {
+    event.preventDefault(); // Evita el comportamiento por defecto del formulario
+    const descripcion = document.getElementById('descripcion').value;
+    const disponible = document.getElementById('disponible').checked;
+    const fecha_creacion = document.getElementById('fecha_creacion').value;
 
-            try {
-                const response = await fetch('/add-plaza-limpieza', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ descripcion, disponible, fecha_creacion })
-                });
-                if (response.ok) {
-                    alert('Plaza añadida exitosamente.');
-                    fetchPlazas(); // Actualiza la lista de plazas
-                    document.getElementById('form-agregar-plaza').reset(); // Reinicia el formulario
-                } else {
-                    const errorText = await response.text();
-                    alert(`Error al añadir la plaza: ${errorText}`);
-                }
-            } catch (error) {
-                console.error('Error al realizar la solicitud POST:', error);
-            }
+    console.log('Descripción:', descripcion);
+    console.log('Disponible:', disponible);
+    console.log('Fecha de creación:', fecha_creacion);
+
+    try {
+        const response = await fetch('/add-plaza-limpieza', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ descripcion, disponible, fecha_creacion })
         });
+        if (response.ok) {
+            alert('Plaza añadida exitosamente.');
+            fetchPlazas(); // Actualiza la lista de plazas
+            document.getElementById('form-agregar-plaza').reset(); // Reinicia el formulario
+        } else {
+            const errorText = await response.text();
+            alert(`Error al añadir la plaza: ${errorText}`);
+        }
+    } catch (error) {
+        console.error('Error al realizar la solicitud POST:', error);
+    }
+});
 
         async function fetchPlazas() {
             try {
@@ -273,7 +279,7 @@
             const confirmation = confirm('¿Estás seguro de que quieres eliminar esta plaza?');
             if (confirmation) {
                 try {
-                    const response = await fetch(`/delete-plaza-seguridad/${id}`, {
+                    const response = await fetch(`/delete-plaza/${id}`, {
                         method: 'DELETE'
                     });
                     console.log('Respuesta del servidor:', response); // Log de respuesta

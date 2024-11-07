@@ -77,15 +77,16 @@ app.get('/empleos-limpieza', async (req, res) => {
         client.release();
     }
 });
-// Endpoint para añadir una nueva plaza de administración
+app.use(express.json()); // Middleware para procesar JSON
+// Endpoint para añadir una nueva plaza de limpieza
 app.post('/add-plaza-limpieza', async (req, res) => {
     const { descripcion, disponible, fecha_creacion } = req.body;
+    console.log('Datos recibidos:', { descripcion, disponible, fecha_creacion });
     const client = await pool.connect();
     try {
-        // Inserta el nuevo empleo en la base de datos
         const result = await client.query(
             'INSERT INTO RECLUTAMIENTO (ID_CATEGORIA, DESCRIPCION, DISPONIBLE, FECHA_CREACION) VALUES ($1, $2, $3, $4)',
-            [2, descripcion, disponible, fecha_creacion] // Asumiendo que 3 es el ID de la categoría "seguridad"
+            [2, descripcion, disponible, fecha_creacion] // Asegúrate de usar el ID de categoría correcto
         );
         res.status(201).json({ message: 'Plaza añadida exitosamente.' });
     } catch (err) {
@@ -95,6 +96,7 @@ app.post('/add-plaza-limpieza', async (req, res) => {
         client.release();
     }
 });
+
 // Endpoint para actualizar la visibilidad de una plaza (PUT request) limpieza
 app.put('/toggle-visibility/:id', async (req, res) => {
     const { id } = req.params;

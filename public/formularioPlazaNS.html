@@ -273,7 +273,7 @@
             const confirmation = confirm('¿Estás seguro de que quieres eliminar esta plaza?');
             if (confirmation) {
                 try {
-                    const response = await fetch(`/delete-plaza-seguridad/${id}`, {
+                    const response = await fetch(`/delete-plaza/${id}`, {
                         method: 'DELETE'
                     });
                     console.log('Respuesta del servidor:', response); // Log de respuesta
